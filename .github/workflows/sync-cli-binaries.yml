@@ -56,11 +56,32 @@ jobs:
             bin/linux-x86_64/nju-cli \
             bin/macos-aarch64/nju-cli
 
-      - name: Commit packaged binaries
+      - name: Update marketplace manifest versions
+        run: |
+          VERSION="${RELEASE_TAG#v}"
+          python3 - <<PY
+          import json
+          from pathlib import Path
+
+          marketplace_path = Path(".claude-plugin/marketplace.json")
+          marketplace = json.loads(marketplace_path.read_text())
+          marketplace.setdefault("metadata", {})["version"] = "${VERSION}"
+          for plugin in marketplace.get("plugins", []):
+              if plugin.get("name") == "nju-cli":
+                  plugin["version"] = "${VERSION}"
+          marketplace_path.write_text(json.dumps(marketplace, indent=2, ensure_ascii=False) + "\n")
+
+          plugin_path = Path(".claude-plugin/plugin.json")
+          plugin = json.loads(plugin_path.read_text())
+          plugin["version"] = "${VERSION}"
+          plugin_path.write_text(json.dumps(plugin, indent=2, ensure_ascii=False) + "\n")
+          PY
+
+      - name: Commit packaged binaries and manifests
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add bin
+          git add bin .claude-plugin/marketplace.json .claude-plugin/plugin.json
           git diff --cached --quiet && exit 0
           git commit -m "Package nju-cli ${RELEASE_TAG}"
           git push
