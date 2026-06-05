@@ -39,6 +39,15 @@ jobs:
             --pattern 'nju-cli-macos-aarch64.tar.gz' \
             --pattern 'nju-cli-windows-x86_64.zip'
 
+      - name: Download source skills
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p unpack/source
+          gh api "repos/nju-cli/nju-cli/tarball/${RELEASE_TAG}" --output dist/nju-cli-source.tar.gz
+          tar -C unpack/source --strip-components=1 -xzf dist/nju-cli-source.tar.gz
+          test -d unpack/source/nju-cli-skills
+
       - name: Unpack into bin directory
         run: |
           rm -rf bin
@@ -55,6 +64,31 @@ jobs:
           chmod +x \
             bin/linux-x86_64/nju-cli \
             bin/macos-aarch64/nju-cli
+
+      - name: Update skill contents
+        run: |
+          rm -rf skills/nju-cli
+          mkdir -p skills
+          cp -R unpack/source/nju-cli-skills skills/nju-cli
+          python3 - <<'PY'
+          from pathlib import Path
+
+          skill_path = Path("skills/nju-cli/SKILL.md")
+          skill = skill_path.read_text()
+          codex_cli = (
+              "优先使用 Codex plugin 内置的 `nju-cli` 二进制：\n\n"
+              "- macOS/Linux: `plugins/nju-cli/scripts/nju-cli`\n"
+              "- Windows: `plugins/nju-cli/scripts/nju-cli.ps1`"
+          )
+          claude_cli = (
+              "优先使用插件内置的 `nju-cli` 二进制：\n\n"
+              "- macOS/Linux: `${CLAUDE_PLUGIN_ROOT}/scripts/nju-cli`\n"
+              "- Windows: `${CLAUDE_PLUGIN_ROOT}/scripts/nju-cli.ps1`"
+          )
+          if codex_cli not in skill:
+              raise SystemExit("expected Codex CLI guidance not found in source skill")
+          skill_path.write_text(skill.replace(codex_cli, claude_cli))
+          PY
 
       - name: Update marketplace manifest versions
         run: |
@@ -77,11 +111,11 @@ jobs:
           plugin_path.write_text(json.dumps(plugin, indent=2, ensure_ascii=False) + "\n")
           PY
 
-      - name: Commit packaged binaries and manifests
+      - name: Commit packaged binaries, skills, and manifests
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add bin .claude-plugin/marketplace.json .claude-plugin/plugin.json
+          git add bin skills/nju-cli .claude-plugin/marketplace.json .claude-plugin/plugin.json
           git diff --cached --quiet && exit 0
           git commit -m "Package nju-cli ${RELEASE_TAG}"
           git push
