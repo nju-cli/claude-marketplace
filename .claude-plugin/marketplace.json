@@ -1,0 +1,31 @@
+{
+  "name": "nju-cli",
+  "owner": {
+    "name": "nju-cli",
+    "url": "https://github.com/nju-cli"
+  },
+  "metadata": {
+    "description": "Cowork skills and CLI tooling for Nanjing University services.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "nju-cli",
+      "source": "./",
+      "description": "Cowork skills and CLI tool for interacting with Nanjing University services.",
+      "version": "1.0.0",
+      "author": {
+        "name": "nju-cli",
+        "url": "https://github.com/nju-cli"
+      },
+      "homepage": "https://github.com/nju-cli/nju-cli",
+      "license": "GPL-3.0-only",
+      "keywords": [
+        "nju",
+        "cli",
+        "skills",
+        "education"
+      ]
+    }
+  ]
+}
