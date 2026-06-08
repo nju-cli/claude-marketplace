@@ -83,19 +83,19 @@ jobs:
 
           skill_path = Path("skills/nju-cli/SKILL.md")
           skill = skill_path.read_text()
-          codex_cli = (
-              "优先使用 Codex plugin 内置的 `nju-cli` 二进制：\n\n"
-              "- macOS/Linux: `plugins/nju-cli/scripts/nju-cli`\n"
-              "- Windows: `plugins/nju-cli/scripts/nju-cli.ps1`"
+          skill = skill.replace(
+              "优先使用 Codex plugin 内置的 `nju-cli` 二进制：",
+              "优先使用插件内置的 `nju-cli` 二进制：",
           )
-          claude_cli = (
-              "优先使用插件内置的 `nju-cli` 二进制：\n\n"
-              "- macOS/Linux: `${CLAUDE_PLUGIN_ROOT}/scripts/nju-cli`\n"
-              "- Windows: `${CLAUDE_PLUGIN_ROOT}/scripts/nju-cli.ps1`"
+          skill = skill.replace(
+              "- macOS/Linux: `scripts/nju-cli`",
+              "- macOS/Linux: `${CLAUDE_PLUGIN_ROOT}/scripts/nju-cli`",
           )
-          if codex_cli not in skill:
-              raise SystemExit("expected Codex CLI guidance not found in source skill")
-          skill_path.write_text(skill.replace(codex_cli, claude_cli))
+          skill = skill.replace(
+              "- Windows: `scripts/nju-cli.ps1`",
+              "- Windows: `${CLAUDE_PLUGIN_ROOT}/scripts/nju-cli.ps1`",
+          )
+          skill_path.write_text(skill)
           PY
 
       - name: Update marketplace manifest versions
