@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Cowork skills and CLI tooling for Nanjing University services.",
-    "version": "1.4.4"
+    "version": "1.4.5"
   },
   "plugins": [
     {
       "name": "nju-cli",
       "source": "./",
       "description": "Cowork skills and CLI tool for interacting with Nanjing University services.",
-      "version": "1.4.4",
+      "version": "1.4.5",
       "author": {
         "name": "nju-cli",
         "url": "https://github.com/nju-cli"
